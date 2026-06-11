@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Polla Mundialista 2026 - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="header-left">
+                <div class="logo">
+                    <i class="fas fa-trophy"></i>
+                    <h1>Polla Mundialista <span>2026</span></h1>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="user-info">
+                    {% if user.photo %}
+                    <img src="{{ user.photo }}" alt="" class="user-avatar">
+                    {% endif %}
+                    <div class="user-details">
+                        <span class="user-name">{{ user.name }}</span>
+                        {% if user.is_admin %}
+                        <span class="user-badge admin">Admin</span>
+                        {% endif %}
+                    </div>
+                    <a href="/logout" class="logout-btn" title="Cerrar sesión">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- Navigation Tabs -->
+            <nav class="nav-tabs" id="navTabs">
+                <button class="nav-tab active" data-tab="partidos">
+                    <i class="fas fa-futbol"></i> Partidos
+                </button>
+                <button class="nav-tab" data-tab="ranking">
+                    <i class="fas fa-trophy"></i> Ranking
+                </button>
+                <button class="nav-tab" data-tab="grupos">
+                    <i class="fas fa-table"></i> Grupos
+                </button>
+                <button class="nav-tab" data-tab="mispredictions">
+                    <i class="fas fa-list"></i> Mis Pronósticos
+                </button>
+                {% if user.is_admin %}
+                <button class="nav-tab admin-tab" data-tab="admin">
+                    <i class="fas fa-cog"></i> Admin
+                </button>
+                {% endif %}
+            </nav>
+
+            <!-- Tab: Partidos -->
+            <section class="tab-content active" id="tab-partidos">
+                <div class="section-header">
+                    <h2><i class="fas fa-calendar-alt"></i> Partidos</h2>
+                    <div class="filter-tabs" id="filterTabs">
+                        <button class="filter-tab active" data-filter="all">Todos</button>
+                        <button class="filter-tab" data-filter="A">Grupo A</button>
+                        <button class="filter-tab" data-filter="B">Grupo B</button>
+                        <button class="filter-tab" data-filter="C">Grupo C</button>
+                        <button class="filter-tab" data-filter="D">Grupo D</button>
+                    </div>
+                </div>
+                <div class="matches-grid-full" id="matchesContainer">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando partidos...
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Ranking -->
+            <section class="tab-content" id="tab-ranking">
+                <div class="section-header">
+                    <h2><i class="fas fa-trophy"></i> Tabla de Posiciones</h2>
+                </div>
+                <div class="ranking-container" id="rankingContainer">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando ranking...
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Grupos -->
+            <section class="tab-content" id="tab-grupos">
+                <div class="section-header">
+                    <h2><i class="fas fa-table"></i> Tabla de Grupos</h2>
+                </div>
+                <div class="groups-container" id="groupsContainer">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando grupos...
+                    </div>
+                </div>
+            </section>
+
+            <!-- Tab: Mis Pronósticos -->
+            <section class="tab-content" id="tab-mispredictions">
+                <div class="section-header">
+                    <h2><i class="fas fa-list"></i> Mis Pronósticos</h2>
+                </div>
+                <div id="myPredictionsContainer">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando...
+                    </div>
+                </div>
+            </section>
+
+            {% if user.is_admin %}
+            <!-- Tab: Admin -->
+            <section class="tab-content" id="tab-admin">
+                <div class="section-header">
+                    <h2><i class="fas fa-cog"></i> Panel de Administración</h2>
+                    <p class="admin-desc">Ingresa los resultados reales de los partidos</p>
+                </div>
+                <div class="admin-container" id="adminContainer">
+                    <div class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Cargando...
+                    </div>
+                </div>
+            </section>
+            {% endif %}
+        </div>
+    </main>
+
+    <!-- Prediction Modal -->
+    <div class="modal-overlay" id="predictionModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-pen"></i> Tu Pronóstico</h3>
+                <button class="modal-close" id="modalClose">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="match-detail" id="modalMatchDetail"></div>
+                <form id="predictionForm">
+                    <input type="hidden" id="matchIdInput">
+                    <div class="score-inputs">
+                        <div class="score-group">
+                            <label id="labelLocal">Local</label>
+                            <input type="number" id="localScore" min="0" max="20" class="score-input" required>
+                        </div>
+                        <span class="score-vs">VS</span>
+                        <div class="score-group">
+                            <label id="labelVisitor">Visitante</label>
+                            <input type="number" id="visitorScore" min="0" max="20" class="score-input" required>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-danger" id="deletePredictionBtn" style="display:none;">
+                            <i class="fas fa-trash"></i> Eliminar
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Guardar Pronóstico
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

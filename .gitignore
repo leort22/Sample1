@@ -1,0 +1,17 @@
+# Environment variables
+.env
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Database (SQLite)
+instance/
+
+# Old files
+hola_mundo.py
+README.md
+style.css
+script.js
+index.html
